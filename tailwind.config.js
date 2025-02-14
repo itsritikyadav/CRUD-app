@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -12,21 +11,21 @@ module.exports = {
         foreground: "var(--foreground)",
       },
       animation: {
-        slideDown: "slideDown 0.5s ease-out",  
+        slideDown: "slideDown 0.5s ease-out",
       },
       keyframes: {
         slideDown: {
           "0%": {
             opacity: "0",
-            transform: "translateY(-50px)",  
+            transform: "translateY(-50px)",
           },
           "100%": {
             opacity: "1",
-            transform: "translateY(0)",  
+            transform: "translateY(0)",
           },
         },
       },
     },
   },
-  plugins: [require("daisyui")],
+  plugins: [require("daisyui")], 
 };
