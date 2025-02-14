@@ -1,34 +1,33 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react"; // Add useEffect here
-
+import { useState, useEffect } from "react"; 
 
 interface User {
   id: number;
   name: string;
 }
-
 export default function Home() {
   const queryClient = useQueryClient();
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [newUserName, setNewUserName] = useState("");
   const [editUser, setEditUser] = useState<User | null>(null);
   const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
-  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false); // State to control Add User modal visibility
-
-  // Fetch users
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false); 
   const { data: users, isLoading, error } = useQuery<User[]>({
     queryKey: ["users"],
     queryFn: async () => {
-      const res = await fetch("https://jsonplaceholder.typicode.com/users");
-      if (!res.ok) throw new Error("Failed to fetch users");
-      return res.json();
+      try {
+        const res = await fetch("https://jsonplaceholder.typicode.com/users");
+        if (!res.ok) throw new Error("Failed to fetch users");
+        return res.json();
+      } catch (err) {
+        setAlert({ type: "error", message: "Failed to fetch users!" });
+        throw err; 
+      }
     },
-    onError: () => setAlert({ type: "error", message: "Failed to fetch users!" }),
   });
-
-  // Add User
+  
   const addUserMutation = useMutation({
     mutationFn: async (newUser: User) => {
       const res = await fetch("https://jsonplaceholder.typicode.com/users", {
@@ -41,54 +40,40 @@ export default function Home() {
     },
     onSuccess: (newUser) => {
       setAlert({ type: "success", message: "User added successfully!" });
-
-      // Generate a unique ID
       const uniqueId = Date.now();
-
-      // Update UI Optimistically
       queryClient.setQueryData(["users"], (oldUsers: User[] | undefined) =>
         oldUsers ? [...oldUsers, { ...newUser, id: uniqueId }] : [{ ...newUser, id: uniqueId }]
       );
-
-      // Close the modal and reset input
       setIsAddUserModalOpen(false);
       setNewUserName("");
     },
     onError: () => setAlert({ type: "error", message: "Failed to add user!" }),
   });
 
-  // Update User
   const updateUserMutation = useMutation({
     mutationFn: async (updatedUser: User) => {
-      if (updatedUser.id > 10) { // JSONPlaceholder has only 10 users
+      if (updatedUser.id > 10) { 
         return updatedUser;
       }
-
       const res = await fetch(`https://jsonplaceholder.typicode.com/users/${updatedUser.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedUser),
       });
       if (!res.ok) throw new Error("Failed to update user");
-
       return res.json();
     },
     onSuccess: (updatedUser) => {
       setAlert({ type: "success", message: "User updated successfully!" });
-
-      // Update UI Optimistically
       queryClient.setQueryData(["users"], (oldUsers: User[] | undefined) =>
         oldUsers ? oldUsers.map((user) => (user.id === updatedUser.id ? updatedUser : user)) : []
       );
-
-      // Reset edit state after updating
       setEditUser(null);
       setNewUserName("");
     },
     onError: () => setAlert({ type: "error", message: "Failed to update user!" }),
   });
 
-  // Delete User
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: number) => {
       const res = await fetch(`https://jsonplaceholder.typicode.com/users/${userId}`, {
@@ -106,7 +91,6 @@ export default function Home() {
     onError: () => setAlert({ type: "error", message: "Failed to delete user!" }),
   });
 
-  // Handle Add User Submission
   const handleAddUser = () => {
     if (!newUserName.trim()) {
       setAlert({ type: "error", message: "User name cannot be empty!" });
@@ -114,26 +98,20 @@ export default function Home() {
     }
     addUserMutation.mutate({ id: Date.now(), name: newUserName });
   };
-
-  // Handle Update User Submission
   const handleUpdateUser = () => {
-    if (!editUser || !editUser.name.trim()) {
+    if (!editUser?.name?.trim()) {
       setAlert({ type: "error", message: "User name cannot be empty!" });
       return;
     }
     updateUserMutation.mutate(editUser);
   };
-
-  // UseEffect to automatically dismiss the alert after 5 seconds
+  
   useEffect(() => {
     if (alert) {
-      const timer = setTimeout(() => setAlert(null), 2000); // Auto-dismiss after 5 seconds
+      const timer = setTimeout(() => setAlert(null), 2000); 
       return () => clearTimeout(timer);
     }
   }, [alert]);
-
-
-
   return (
     <div className="p-6 bg-white shadow-md rounded-md">
       <div className="flex justify-between items-center mb-4">
@@ -141,9 +119,6 @@ export default function Home() {
       <button onClick={() => setIsAddUserModalOpen(true)}className="btn btn-primary">Add User</button>
       </div>
 
-{/* Alerts for success/error */}
-{/* Alerts for success/error */}
-{/* Alerts for success/error */}
 {alert && (
   <div className={`fixed top-0 left-1/2 transform -translate-x-1/2 z-50 p-4`}>
     <div
@@ -156,13 +131,6 @@ export default function Home() {
     </div>
   </div>
 )}
-
-
-
-
-
-
-
 
 
       {isLoading && <p className="text-gray-600">Loading users...</p>}
@@ -181,7 +149,6 @@ export default function Home() {
         ))}
       </ul>
 
-      {/* Add New User Modal */}
       {isAddUserModalOpen && (
         <div className="modal modal-open">
           <div className="modal-box">
@@ -201,7 +168,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Edit User Modal */}
       {editUser && (
         <div className="modal modal-open">
           <div className="modal-box">
@@ -220,7 +186,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
       {deleteUserId && (
         <div className="modal modal-open">
           <div className="modal-box">

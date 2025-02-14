@@ -13,17 +13,17 @@ export default {
         foreground: "var(--foreground)",
       },
       animation: {
-        slideDown: "slideDown 0.5s ease-out",  // Define the slide down animation
+        slideDown: "slideDown 0.5s ease-out",  
       },
       keyframes: {
         slideDown: {
           "0%": {
             opacity: "0",
-            transform: "translateY(-50px)",  // Start position above the viewport
+            transform: "translateY(-50px)",  
           },
           "100%": {
             opacity: "1",
-            transform: "translateY(0)",  // End position at normal view
+            transform: "translateY(0)",  
           },
         },
       },
